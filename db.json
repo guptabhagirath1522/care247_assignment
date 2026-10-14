@@ -1,0 +1,274 @@
+{
+  "customers": [
+    {
+      "id": "1",
+      "firstName": "John",
+      "lastName": "Smith",
+      "dateOfBirth": "1985-03-15",
+      "maritalStatus": "Married",
+      "secureId": "SSN-XXX-XX-1234",
+      "addresses": [
+        {
+          "id": "a1",
+          "type": "Home",
+          "street": "123 Oak Street",
+          "city": "Springfield",
+          "state": "IL",
+          "zipCode": "62701"
+        },
+        {
+          "id": "a2",
+          "type": "Business",
+          "street": "456 Corporate Blvd",
+          "city": "Springfield",
+          "state": "IL",
+          "zipCode": "62702"
+        }
+      ],
+      "phones": [
+        {
+          "id": "p1",
+          "type": "Mobile",
+          "number": "(555) 123-4567",
+          "isPrimary": true
+        },
+        {
+          "id": "p2",
+          "type": "Work",
+          "number": "(555) 234-5678",
+          "isPrimary": false
+        }
+      ],
+      "emails": [
+        {
+          "id": "e1",
+          "type": "Personal",
+          "address": "john.smith@email.com",
+          "isPrimary": true
+        },
+        {
+          "id": "e2",
+          "type": "Work",
+          "address": "jsmith@company.com",
+          "isPrimary": false
+        }
+      ]
+    },
+    {
+      "id": "2",
+      "firstName": "Jane",
+      "lastName": "Doe",
+      "dateOfBirth": "1990-07-22",
+      "maritalStatus": "Single",
+      "secureId": "SSN-XXX-XX-5678",
+      "addresses": [
+        {
+          "id": "a3",
+          "type": "Home",
+          "street": "789 Maple Avenue",
+          "city": "Chicago",
+          "state": "IL",
+          "zipCode": "60601"
+        },
+        {
+          "id": "a4",
+          "type": "Mailing",
+          "street": "PO Box 1234",
+          "city": "Chicago",
+          "state": "IL",
+          "zipCode": "60602"
+        }
+      ],
+      "phones": [
+        {
+          "id": "p3",
+          "type": "Mobile",
+          "number": "(555) 345-6789",
+          "isPrimary": true
+        },
+        {
+          "id": "p4",
+          "type": "Home",
+          "number": "(555) 456-7890",
+          "isPrimary": false
+        }
+      ],
+      "emails": [
+        {
+          "id": "e3",
+          "type": "Personal",
+          "address": "jane.doe@email.com",
+          "isPrimary": true
+        }
+      ]
+    },
+    {
+      "id": "3",
+      "firstName": "Robert",
+      "lastName": "Johnson",
+      "dateOfBirth": "1978-11-30",
+      "maritalStatus": "Divorced",
+      "secureId": "SSN-XXX-XX-9012",
+      "addresses": [
+        {
+          "id": "a5",
+          "type": "Home",
+          "street": "321 Pine Road",
+          "city": "Peoria",
+          "state": "IL",
+          "zipCode": "61602"
+        }
+      ],
+      "phones": [
+        {
+          "id": "p5",
+          "type": "Mobile",
+          "number": "(555) 567-8901",
+          "isPrimary": true
+        },
+        {
+          "id": "p6",
+          "type": "Work",
+          "number": "(555) 678-9012",
+          "isPrimary": false
+        },
+        {
+          "id": "p7",
+          "type": "Home",
+          "number": "(555) 789-0123",
+          "isPrimary": false
+        }
+      ],
+      "emails": [
+        {
+          "id": "e4",
+          "type": "Work",
+          "address": "rjohnson@business.com",
+          "isPrimary": true
+        },
+        {
+          "id": "e5",
+          "type": "Personal",
+          "address": "rob.johnson@email.com",
+          "isPrimary": false
+        }
+      ]
+    },
+    {
+      "id": "4",
+      "firstName": "Emily",
+      "lastName": "Williams",
+      "dateOfBirth": "1995-01-08",
+      "maritalStatus": "Single",
+      "secureId": "SSN-XXX-XX-3456",
+      "addresses": [
+        {
+          "id": "a6",
+          "type": "Home",
+          "street": "654 Elm Street",
+          "city": "Naperville",
+          "state": "IL",
+          "zipCode": "60540"
+        },
+        {
+          "id": "a7",
+          "type": "Business",
+          "street": "987 Tech Park Drive",
+          "city": "Chicago",
+          "state": "IL",
+          "zipCode": "60603"
+        },
+        {
+          "id": "a8",
+          "type": "Mailing",
+          "street": "654 Elm Street",
+          "city": "Naperville",
+          "state": "IL",
+          "zipCode": "60540"
+        }
+      ],
+      "phones": [
+        {
+          "id": "p8",
+          "type": "Mobile",
+          "number": "(555) 890-1234",
+          "isPrimary": true
+        }
+      ],
+      "emails": [
+        {
+          "id": "e6",
+          "type": "Personal",
+          "address": "emily.w@email.com",
+          "isPrimary": true
+        },
+        {
+          "id": "e7",
+          "type": "Work",
+          "address": "ewilliams@techcorp.com",
+          "isPrimary": false
+        }
+      ]
+    },
+    {
+      "id": "5",
+      "firstName": "Michael",
+      "lastName": "Brown",
+      "dateOfBirth": "1982-06-14",
+      "maritalStatus": "Married",
+      "secureId": "SSN-XXX-XX-7890",
+      "addresses": [
+        {
+          "id": "a9",
+          "type": "Home",
+          "street": "147 Birch Lane",
+          "city": "Evanston",
+          "state": "IL",
+          "zipCode": "60201"
+        },
+        {
+          "id": "a10",
+          "type": "Business",
+          "street": "258 Finance Street",
+          "city": "Chicago",
+          "state": "IL",
+          "zipCode": "60604"
+        }
+      ],
+      "phones": [
+        {
+          "id": "p9",
+          "type": "Mobile",
+          "number": "(555) 901-2345",
+          "isPrimary": true
+        },
+        {
+          "id": "p10",
+          "type": "Work",
+          "number": "(555) 012-3456",
+          "isPrimary": false
+        }
+      ],
+      "emails": [
+        {
+          "id": "e8",
+          "type": "Personal",
+          "address": "michael.brown@email.com",
+          "isPrimary": true
+        },
+        {
+          "id": "e9",
+          "type": "Work",
+          "address": "mbrown@finance.com",
+          "isPrimary": false
+        },
+        {
+          "id": "e10",
+          "type": "Other",
+          "address": "mikeb@alumni.edu",
+          "isPrimary": false
+        }
+      ]
+    }
+  ]
+}
