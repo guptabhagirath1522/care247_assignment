@@ -1,9 +1,4 @@
 import 'package:flutter/material.dart';
-
-/// A reusable widget for displaying an empty state.
-///
-/// Used across the application when there is no data to display
-/// (e.g., no search results, initial state hints).
 class EmptyStateWidget extends StatelessWidget {
   final IconData icon;
   final String title;

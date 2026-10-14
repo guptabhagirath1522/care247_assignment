@@ -30,12 +30,6 @@ class CustomerApi {
         _requestTimeout = requestTimeout ?? const Duration(seconds: 4),
         _probeTimeout = probeTimeout ?? const Duration(milliseconds: 1500);
 
-  /// Searches customers via HTTP.
-  ///
-  /// If the current base URL fails due to a network or connection error,
-  /// this method automatically probes candidate endpoints (USB localhost,
-  /// Android emulator loopback, LAN IP) to transparently discover and lock
-  /// to the working host.
   Future<List<Customer>> searchCustomers(
     Map<String, String> queryParameters,
   ) async {
@@ -59,7 +53,6 @@ class CustomerApi {
     }
   }
 
-  /// Fetches a single customer by [id].
   Future<Customer> getCustomerById(String id) async {
     try {
       return await _executeGetById('${AppConfig.customersUrl}/$id');
@@ -144,7 +137,6 @@ class CustomerApi {
     }
   }
 
-  /// Automatically cycles through candidate base URLs to find an active server.
   Future<T> _retryWithAutoDiscovery<T>(
     Future<T> Function(String customersUrl) operation,
   ) async {
@@ -163,7 +155,6 @@ class CustomerApi {
     );
   }
 
-  /// Probes candidate hosts and returns the first one that successfully responds.
   Future<String?> autoDiscoverWorkingHost() async {
     for (final candidate in AppConfig.candidateBaseUrls) {
       final isWorking = await testEndpoint(candidate);
@@ -174,7 +165,6 @@ class CustomerApi {
     return null;
   }
 
-  /// Tests connectivity to a specific server base URL.
   Future<bool> testEndpoint(String baseUrl) async {
     try {
       var cleaned = baseUrl.trim();

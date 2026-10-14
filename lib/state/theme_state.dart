@@ -1,6 +1,4 @@
 import 'package:flutter/material.dart';
-
-/// State management for application theme mode (light, dark, system).
 class ThemeState extends ChangeNotifier {
   ThemeMode _themeMode;
 

@@ -3,11 +3,6 @@ import 'package:intl/intl.dart';
 
 import '../models/customer.dart';
 
-/// A reusable list item widget for displaying a customer summary.
-///
-/// Shows the customer's full name, date of birth, primary phone,
-/// and primary email. Designed for use in [ListView.builder] for
-/// efficient rendering.
 class CustomerListItem extends StatelessWidget {
   final Customer customer;
   final VoidCallback onTap;
@@ -107,7 +102,6 @@ class CustomerListItem extends StatelessWidget {
   }
 }
 
-/// A small reusable row with an icon and a label.
 class _InfoRow extends StatelessWidget {
   final IconData icon;
   final String label;

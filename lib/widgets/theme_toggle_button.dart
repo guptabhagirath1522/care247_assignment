@@ -3,7 +3,6 @@ import 'package:provider/provider.dart';
 
 import '../state/theme_state.dart';
 
-/// An animated toggle button for switching between light and dark themes.
 class ThemeToggleButton extends StatelessWidget {
   const ThemeToggleButton({super.key});
 

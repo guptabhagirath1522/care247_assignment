@@ -5,12 +5,6 @@ import '../config/search_config.dart';
 import '../state/customer_search_state.dart';
 import 'dynamic_field.dart';
 
-/// Configuration-driven search form.
-///
-/// Iterates over the [searchConfig] list, sorted by [FieldConfig.renderOrder],
-/// and renders each field using [DynamicField]. Adding a new [FieldConfig]
-/// entry to the configuration list will automatically render the new field
-/// without modifying this widget's code.
 class DynamicSearchForm extends StatefulWidget {
   final VoidCallback onSearch;
   final VoidCallback onClear;
@@ -26,10 +20,7 @@ class DynamicSearchForm extends StatefulWidget {
 }
 
 class _DynamicSearchFormState extends State<DynamicSearchForm> {
-  /// Focus nodes for text fields, enabling keyboard navigation.
   late final Map<String, FocusNode> _focusNodes;
-
-  /// Sorted configuration, cached to avoid re-sorting on every build.
   late final List<FieldConfig> _sortedConfig;
 
   @override
@@ -115,7 +106,6 @@ class _DynamicSearchFormState extends State<DynamicSearchForm> {
     );
   }
 
-  /// Moves focus to the next text field, or unfocuses if at the end.
   void _moveToNextField(int currentIndex) {
     for (int i = currentIndex + 1; i < _sortedConfig.length; i++) {
       final nextKey = _sortedConfig[i].key;

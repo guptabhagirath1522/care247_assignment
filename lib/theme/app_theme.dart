@@ -1,6 +1,4 @@
 import 'package:flutter/material.dart';
-
-/// Centralized application theme configuration providing cohesive light and dark themes.
 class AppTheme {
   AppTheme._();
 

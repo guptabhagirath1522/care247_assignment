@@ -1,30 +1,15 @@
-# Care247 — Customer Search Application
+# Care247 — Customer Search App
 
-A **Flutter** mobile application for searching, browsing, and viewing customer details, built as a technical assignment demonstrating production-minded Flutter engineering.
-
----
-
-## Table of Contents
-
-- [Setup and Run](#setup-and-run)
-- [Architecture](#architecture)
-- [Configuration-Driven Design](#configuration-driven-design)
-- [Flutter Decisions](#flutter-decisions)
-- [Trade-offs](#trade-offs)
-- [Testing](#testing)
-- [Time Spent](#time-spent)
+A Flutter application for searching and browsing customer records against a mock REST API or bundled offline data. Built with a configuration-driven search form, structured state management with Provider, and a comprehensive automated test suite.
 
 ---
 
-## Setup and Run
+## Getting Started
 
 ### Prerequisites
 
-| Tool           | Version Used       |
-| -------------- | ------------------ |
-| Flutter        | 3.47.7 (stable)   |
-| Dart           | 3.13.5             |
-| Node.js / npm  | Required for JSON Server |
+- Flutter SDK (3.13+ / 3.47+ stable)
+- Node.js & npm (for `json-server`, optional if using offline demo mode)
 
 ### 1. Install Dependencies
 
@@ -32,154 +17,143 @@ A **Flutter** mobile application for searching, browsing, and viewing customer d
 flutter pub get
 ```
 
-### 2. Start JSON Server (Mock API)
+### 2. Start the Mock API Server
 
-Install JSON Server if not already installed:
+Install `json-server` if you haven't already:
 
 ```bash
 npm install -g json-server
 ```
 
-Start the database:
+Start the server using the provided `db.json`:
 
 ```bash
 json-server --watch db.json --port 3001
 ```
 
-The API will be available at `http://localhost:3001/customers`.
+The endpoint will be available at `http://localhost:3001/customers`.
 
-### 3. Run the Application
+### 3. Run the App
 
 ```bash
 flutter run
 ```
 
-### API Configuration by Platform
+### Network & Platform Notes
 
-| Platform           | Base URL                                  |
-| ------------------ | ----------------------------------------- |
-| Android Emulator   | `http://10.0.2.2:3001`                    |
-| iOS Simulator      | `http://localhost:3001`                    |
-| Physical Device    | `http://<your-local-ip>:3001`             |
-| Web / Desktop      | `http://localhost:3001`                    |
+| Target | Host / Base URL |
+|---|---|
+| Android Emulator | `http://10.0.2.2:3001` |
+| iOS Simulator / macOS / Web | `http://localhost:3001` |
+| Physical Device | `http://<your-lan-ip>:3001` |
 
-The API base URL is configured centrally in [`lib/config/app_config.dart`](lib/config/app_config.dart) and auto-detects the platform. It is **not hardcoded** throughout the application.
+- **Auto-Discovery**: If the initial connection fails, `CustomerApi` automatically probes candidate hosts (`localhost`, `10.0.2.2`, and local LAN) to find the active server without requiring manual URL editing.
+- **In-App Server Config**: Tap the server icon in the app bar to test connection latency, specify a custom URL, or switch to **Offline Demo Mode** (which reads directly from the bundled `db.json` asset with zero network dependencies).
+- **Compile-time Override**: You can also pass `--dart-define=API_URL=http://<host>:3001` during `flutter run`.
 
 ---
 
-## Architecture
+## Architecture & Project Structure
 
-### Project Structure
+The codebase is organized into clean functional layers separating data fetching, state, and UI:
 
 ```
 lib/
 ├── config/
-│   ├── app_config.dart          # API URL & environment configuration
-│   └── search_config.dart       # Configuration-driven field definitions
-├── models/
-│   ├── customer.dart            # Customer model with fromJson/toJson
-│   ├── address.dart             # Address model
-│   ├── phone.dart               # Phone model
-│   └── email.dart               # Email model
+│   ├── app_config.dart             # API base URL, candidate hosts & platform resolution
+│   └── search_config.dart          # Configuration-driven search field definitions
 ├── data/
-│   ├── customer_api.dart        # Low-level HTTP client
-│   └── customer_repository.dart # Repository mediating API and state
-├── state/
-│   └── customer_search_state.dart # ChangeNotifier-based state management
+│   ├── customer_api.dart           # HTTP client with timeout & auto-discovery fallback
+│   └── customer_repository.dart    # Data repository, query filtering & offline asset loader
+├── models/
+│   ├── customer.dart               # Customer entity with JSON parsing & display getters
+│   ├── address.dart                # Address entity
+│   ├── phone.dart                  # Phone entity (with isPrimary flag)
+│   └── email.dart                  # Email entity (with isPrimary flag)
 ├── screens/
-│   ├── customer_search_screen.dart  # Search form screen
-│   ├── customer_results_screen.dart # Results list screen
-│   └── customer_detail_screen.dart  # Customer detail screen
+│   ├── customer_search_screen.dart # Search form, server status & theme switcher
+│   ├── customer_results_screen.dart# Search results list with pull-to-refresh
+│   └── customer_detail_screen.dart # Customer detail view with contact & address sections
+├── state/
+│   ├── customer_search_state.dart  # Search flow state machine (ChangeNotifier)
+│   └── theme_state.dart            # Light / Dark theme mode state
+├── theme/
+│   └── app_theme.dart              # Material 3 light and dark theme definitions
 ├── widgets/
-│   ├── dynamic_search_form.dart # Config-driven form widget
-│   ├── dynamic_field.dart       # Generic field renderer
-│   ├── customer_list_item.dart  # Reusable list item card
-│   ├── empty_state_widget.dart  # Reusable empty state
-│   └── error_state_widget.dart  # Reusable error state with retry
-└── main.dart                    # App entry point
+│   ├── customer_list_item.dart     # Customer card component
+│   ├── dynamic_field.dart          # Generic input renderer for text, date, and dropdown
+│   ├── dynamic_search_form.dart    # Config-driven form layout & input controller manager
+│   ├── empty_state_widget.dart     # Empty results placeholder
+│   ├── error_state_widget.dart     # Error message card with retry action
+│   ├── server_config_sheet.dart    # Bottom sheet for endpoint testing & demo mode toggle
+│   └── theme_toggle_button.dart    # Dark/light theme toggle button
+└── main.dart                       # App entry point & provider tree setup
 ```
 
-### Separation of Concerns
+### Data & State Flow
 
-The architecture follows a **three-layer separation**:
-
-| Layer                | Responsibility                                      | Key Files                           |
-| -------------------- | --------------------------------------------------- | ----------------------------------- |
-| **Presentation**     | Widgets, screens, user interaction                  | `screens/`, `widgets/`              |
-| **State**            | Application state, business logic, state transitions | `state/customer_search_state.dart`  |
-| **Data**             | HTTP communication, API abstraction, data mapping   | `data/customer_api.dart`, `data/customer_repository.dart` |
-
-- **Presentation** widgets never make API calls directly.
-- **State** layer (ChangeNotifier) holds all application state and delegates data fetching to the repository.
-- **Data** layer handles HTTP, JSON parsing, and error wrapping. The repository provides a clean interface to state.
-
-### State Management Approach
-
-**Provider + ChangeNotifier** was chosen because:
-
-1. **Proportionate to scope** — this is a focused application with straightforward state needs. Provider is the official Flutter recommendation for apps of this complexity.
-2. **Minimal dependency** — `provider` is maintained by the Flutter team and adds negligible overhead.
-3. **Clear state transitions** — The `SearchStatus` enum explicitly models all states:
-
-```
-Initial → Loading → Success | Empty | Error
-```
-
-States are represented as:
-
-| State     | Meaning                             |
-| --------- | ----------------------------------- |
-| `initial` | No search performed yet             |
-| `loading` | API request in progress             |
-| `success` | Results returned                    |
-| `empty`   | No matching customers               |
-| `error`   | Request failed (with error message) |
-
-### Navigation
-
-Standard Flutter `Navigator.push` with `MaterialPageRoute` for:
-- Search → Results (after successful search)
-- Results → Detail (on customer tap)
-- Back navigation via AppBar back button
+1. **State Management**: `CustomerSearchState` (`ChangeNotifier`) models the search lifecycle through explicit states:
+   `initial` → `loading` → `success` | `empty` | `error`.
+2. **Separation**: Screens and widgets trigger actions on `CustomerSearchState`. The state delegates data retrieval to `CustomerRepository`, which interfaces with `CustomerApi` or the bundled asset fallback. UI widgets never communicate with HTTP clients directly.
+3. **Targeted Rebuilds**: Widgets use `Consumer<CustomerSearchState>` and `context.select(...)` so that only the widgets that depend on search status rebuild on state changes.
 
 ---
 
-## Configuration-Driven Design
+## Configuration-Driven Search Form
 
-### How the Search Form is Generated
+The search form is built dynamically from field definitions rather than hardcoded UI components.
 
-The search form is **entirely driven by configuration**. The flow is:
+### How It Works
 
-```
-searchConfig (List<FieldConfig>)
-        ↓
-DynamicSearchForm (sorts by renderOrder, iterates)
-        ↓
-DynamicField (renders widget based on FieldType)
-        ↓
-User Input → Map<String, String> criteria
-        ↓
-CustomerSearchState → Repository → API
-        ↓
-Results
-```
-
-The configuration is defined in [`lib/config/search_config.dart`](lib/config/search_config.dart):
+Field metadata is declared in `lib/config/search_config.dart`:
 
 ```dart
+enum FieldType { text, date, dropdown }
+
+class FieldConfig {
+  final String key;
+  final FieldType type;
+  final String label;
+  final String? placeholder;
+  final int renderOrder;
+  final List<String>? options;
+  // ...
+}
+
 final List<FieldConfig> searchConfig = [
-  FieldConfig(key: 'firstName', type: FieldType.text, label: 'First Name', ...),
-  FieldConfig(key: 'lastName', type: FieldType.text, label: 'Last Name', ...),
-  FieldConfig(key: 'dateOfBirth', type: FieldType.date, label: 'Date of Birth', ...),
+  const FieldConfig(
+    key: 'firstName',
+    type: FieldType.text,
+    label: 'First Name',
+    placeholder: 'Enter first name',
+    renderOrder: 1,
+  ),
+  const FieldConfig(
+    key: 'lastName',
+    type: FieldType.text,
+    label: 'Last Name',
+    placeholder: 'Enter last name',
+    renderOrder: 2,
+  ),
+  const FieldConfig(
+    key: 'dateOfBirth',
+    type: FieldType.date,
+    label: 'Date of Birth',
+    placeholder: 'YYYY-MM-DD',
+    renderOrder: 3,
+  ),
 ];
 ```
 
-### How to Add a New Search Field
+- `DynamicSearchForm` takes the configuration list, sorts items by `renderOrder`, and creates a `DynamicField` for each entry.
+- `DynamicField` builds the appropriate widget based on `FieldType` (`TextField` for text, interactive date-picker field with clear button for dates, or `DropdownButtonFormField` for dropdowns).
+- The form manages text editing controllers, focus nodes, and keyboard actions (`TextInputAction.next`), aggregating active user inputs into a `Map<String, String>` passed to the search callback.
 
-To add **Marital Status** as a search field:
+### Adding a New Search Field
 
-1. **Open** `lib/config/search_config.dart`
-2. **Add** a new `FieldConfig` entry:
+To add a new field (such as **Marital Status**):
+
+1. Add an entry to `searchConfig` in `lib/config/search_config.dart`:
 
 ```dart
 const FieldConfig(
@@ -192,139 +166,59 @@ const FieldConfig(
 ),
 ```
 
-3. **Done.** No other code changes are needed.
-
-### What Changes / What Doesn't
-
-| Component                     | Change Needed? |
-| ----------------------------- | -------------- |
-| `search_config.dart`          | ✅ Add entry    |
-| `DynamicSearchForm`           | ❌ No change    |
-| `DynamicField`                | ❌ No change    |
-| `CustomerSearchScreen`        | ❌ No change    |
-| `CustomerSearchState`         | ❌ No change    |
-| `CustomerRepository`          | ❌ No change    |
-| `CustomerApi`                 | ❌ No change    |
-
-The `FieldType` enum supports `text`, `date`, and `dropdown`. Adding a new type requires adding a builder case in `DynamicField`, but adding new fields of existing types requires **zero widget changes**.
+2. That's it. `DynamicSearchForm` and `DynamicField` automatically render the dropdown, manage its value, and pass `{'maritalStatus': '...'}` into the query map without any changes to screen or widget code.
 
 ---
 
-## Flutter Decisions
+## Implementation Details
 
-### State Management
-
-**Provider + ChangeNotifier** — selected for its simplicity, official support, and appropriateness for this application's scope. Avoids over-engineering with BLoC/Riverpod for a straightforward CRUD search flow.
-
-`Consumer<CustomerSearchState>` is used for targeted widget rebuilds — only the parts of the UI that depend on search state are rebuilt when state changes.
-
-### Widget Lifecycle Handling
-
-- **Disposed guard**: `CustomerSearchState` tracks `_isDisposed` to prevent calling `notifyListeners()` after the widget tree has been torn down.
-- **`context.mounted` check**: Before performing navigation after an async operation, the code checks `context.mounted` to ensure the widget is still in the tree.
-- **Resource disposal**: `FocusNode` instances created in `DynamicSearchForm` are disposed in `dispose()`. The `CustomerRepository` and its underlying `http.Client` are disposed when the state is disposed.
-
-### Async API Handling
-
-- All API calls use `async`/`await` with proper `try`/`catch` blocks.
-- The UI remains responsive during API calls — a `CircularProgressIndicator` is shown.
-- Errors are caught at the API level and wrapped in typed `CustomerApiException` with user-friendly messages.
-- Network errors (`SocketException`), client errors, and format errors are all handled gracefully.
-
-### Rebuild / Performance Considerations
-
-- **`Consumer` widgets** scope rebuilds to only the widgets that need the state.
-- **`ListView.builder`** renders list items lazily — only visible items are built.
-- **`AlwaysScrollableScrollPhysics`** ensures pull-to-refresh works even with few items.
-- **`const` constructors** used throughout for widget reuse.
-- **Sorted config cached** in `initState()` rather than re-sorted on every build.
-- **Focus nodes** are created once in `initState()` and reused, not recreated per build.
-
-### Keyboard and Form Behaviour
-
-- **GestureDetector** on search screen dismisses keyboard when tapping outside fields.
-- **`TextInputAction.next`** allows moving between text fields via the keyboard action button.
-- **Date of Birth** uses `showDatePicker()` — no manual date typing required.
-- **Focus management** moves focus to the next text field automatically on submit.
-- **Keyboard dismissal** before date picker and before search/clear actions.
-- **`SingleChildScrollView`** prevents keyboard from obscuring fields.
+- **Lifecycle & Resource Cleanup**:
+  - Focus nodes and text controllers initialized in `DynamicSearchForm` are disposed in `dispose()`.
+  - `CustomerSearchState` tracks an `_isDisposed` flag to prevent calling `notifyListeners()` after disposal.
+  - Async operations verify `context.mounted` before triggering navigation.
+- **Form & Keyboard UX**:
+  - Tapping outside text fields unfocuses the current input and dismisses the keyboard.
+  - Text fields use `TextInputAction.next` with automatic focus progression to the next field.
+  - Date selection uses the Material date picker modal rather than requiring manual date string typing.
+- **Rendering Performance**:
+  - Results use `ListView.builder` for lazy, on-demand item rendering.
+  - `const` constructors are used across all static widgets to minimize rebuild overhead.
+  - Sorted field configuration is cached on form initialization instead of re-sorting on every build.
 
 ---
 
-## Trade-offs
+## Trade-offs & Decisions
 
-| Decision | Rationale |
-|---|---|
-| **Provider over BLoC/Riverpod** | Proportionate to the application's complexity. BLoC would add boilerplate without clear benefit for this scope. |
-| **JSON Server `_like` for partial matching** | Simplifies the search implementation. In production, server-side search would be more robust. |
-| **No pagination** | The sample dataset is small. In production, API pagination would be essential. |
-| **No offline caching** | Kept the scope focused. A production app would benefit from local caching. |
-| **Models use manual `fromJson`/`toJson`** | Avoids code-generation dependencies (`json_serializable`, `freezed`). For 4 models, manual serialization is clearer and has zero build overhead. |
-| **No input validation** | Search fields accept any input. Validation would be added for production (e.g., name length limits). |
-| **`http` package over `dio`** | Fewer dependencies. `http` is sufficient for simple GET requests. |
+- **Provider over BLoC / Riverpod**: For an application of this scope, `Provider` + `ChangeNotifier` provides clear separation of concerns without the boilerplate, streams management, or code generation overhead that BLoC or Riverpod would introduce.
+- **Repository-Side Query Filtering**: While `json-server` provides basic `_like` query parameters, its handling of case sensitivity and date variations is inconsistent across environments. The repository fetches the dataset and performs client-side filtering with date normalization (handling both `YYYY-MM-DD` and `DD/MM/YYYY`), ensuring reliable search behavior.
+- **Manual Model Serialization**: Built models with handwritten `fromJson` and `toJson` methods instead of bringing in `json_serializable` and `build_runner`. For four compact models, this keeps build times instant and avoids code-generation dependencies.
+- **Pagination**: Omitted due to the small size of the mock dataset (10 records). In a production environment with larger datasets, cursor-based pagination with infinite scrolling would be added to the repository and list view.
+- **Offline Fallback / Demo Mode**: Added a bundled asset fallback so reviewers can immediately run and test the app without setting up Node.js or `json-server`.
 
 ---
 
 ## Testing
 
-### What is Tested
+The project includes 70 automated tests covering models, state management, repository logic, and widget rendering.
 
-| Test File | What it Covers |
-|---|---|
-| `test/models_test.dart` | JSON parsing for all models (Customer, Address, Phone, Email), convenience getters (`fullName`, `primaryPhone`, `primaryEmail`), edge cases (empty lists, no primary), `toJson`, `copyWith`, equality |
-| `test/search_config_test.dart` | Configuration completeness, field types, render order sorting, extensibility (adding new fields) |
-| `test/customer_search_state_test.dart` | State transitions (initial → loading → success/empty/error), criterion updates, clear/reset, retry, mock repository interaction |
-| `test/dynamic_field_test.dart` | Widget rendering for text fields, date fields (calendar icon, formatted display), dropdown fields |
-| `test/customer_list_item_test.dart` | Customer summary display, formatted date, primary phone/email, tap interaction, graceful handling of missing data |
+### Test Suites
 
-### How to Run Tests
+- `test/models_test.dart`: Parsing, null-safety, convenience getters (`fullName`, `primaryPhone`, `primaryEmail`), `toJson`, and value equality across all models.
+- `test/search_config_test.dart`: Configuration completeness, render ordering, and extensible field handling.
+- `test/customer_search_state_test.dart`: State machine transitions (`initial` → `loading` → `success` / `empty` / `error`), criteria updates, reset, and repository mocking.
+- `test/customer_repository_test.dart`: Filtering logic (first name, last name, date normalization, marital status) in live API mode and offline asset mode.
+- `test/dynamic_field_test.dart`: Widget tests for text, date, and dropdown fields, date picker dialog interaction, and clearing values.
+- `test/customer_list_item_test.dart`: Customer card display, formatted dates, primary contact badges, tap callbacks, and graceful missing-data handling.
+- `test/theme_state_test.dart`: Theme toggling logic and theme switcher button rendering.
+
+### Running Tests
 
 ```bash
 flutter test
 ```
 
-All **53 tests** should pass.
-
----
-
-## External Dependencies
-
-| Package    | Version | Justification |
-|------------|---------|---------------|
-| `http`     | ^1.3.0  | Standard HTTP client for REST API calls. Official Dart team package. |
-| `provider` | ^6.1.5  | State management. Official Flutter recommendation. |
-| `intl`     | ^0.20.0 | Date formatting (`DateFormat`). Part of the Dart ecosystem. |
-| `mocktail` | ^1.0.5  | Test mocking (dev dependency only). Lightweight alternative to `mockito` without code generation. |
-
 ---
 
 ## Time Spent
 
-Approximately **4–5 hours**.
-
----
-
-## Final Checklist
-
-- ✅ Flutter and Dart implementation
-- ✅ `db.json` used as data source
-- ✅ Strongly typed Customer models
-- ✅ Configuration-driven search fields
-- ✅ Search supports First Name, Last Name, Date of Birth
-- ✅ New fields can be added without changing widget code
-- ✅ Search results display required customer info
-- ✅ Pull-to-refresh works
-- ✅ Customer details display all required info
-- ✅ Navigation works correctly
-- ✅ Loading, empty, error states handled
-- ✅ API/network failures handled gracefully
-- ✅ Keyboard behaviour is appropriate
-- ✅ Async operations are lifecycle-safe
-- ✅ Controllers/listeners/resources disposed
-- ✅ Efficient list rendering (ListView.builder)
-- ✅ State management separated from UI
-- ✅ Meaningful automated tests (53 tests)
-- ✅ README with complete setup instructions
-- ✅ README explains architecture and config approach
-- ✅ README explains Flutter-specific decisions
-- ✅ README records trade-offs and time spent
+Total time spent: ~4.5 hours (including configuration-driven architecture, API auto-discovery & offline demo mode, UI theme support, and automated test coverage).
